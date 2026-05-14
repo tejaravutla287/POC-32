@@ -1,0 +1,37 @@
+trigger:
+- main
+ 
+pool:
+  vmImage: 'ubuntu-latest'
+ 
+variables:
+  nodeVersion: '18.x'
+ 
+stages:
+- stage: Build
+  jobs:
+  - job: BuildJob
+    steps:
+    - task: NodeTool@0
+      inputs:
+        versionSpec: $(nodeVersion)
+      displayName: 'Install Node.js'
+ 
+    - script: |
+        npm install
+        npm test
+      displayName: 'Install dependencies and run tests'
+ 
+    - task: ArchiveFiles@2
+      inputs:
+        rootFolderOrFile: '$(System.DefaultWorkingDirectory)'
+        includeRootFolder: false
+        archiveType: 'zip'
+        archiveFile: '$(Build.ArtifactStagingDirectory)/app.zip'
+        replaceExistingArchive: true
+ 
+    - task: PublishBuildArtifacts@1
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/app.zip'
+        ArtifactName: 'drop'
+        publishLocation: 'Container'
